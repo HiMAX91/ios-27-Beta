@@ -6,7 +6,7 @@
   <title>iOS 27 Beta 模擬器</title>
   <style>
     /* --- 核心設定 --- */
-    body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-user-select: none; background-color: black; }
+    body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-user-select: none; background-color: black; touch-action: none; }
     .iphone-screen { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: radial-gradient(circle at 50% 0%, #e2d1c3 0%, #b8a698 40%, #756a64 100%); }
 
     /* --- 開機畫面 --- */
@@ -16,15 +16,15 @@
     .progress-bar { width: 0%; height: 100%; background: white; border-radius: 2px; transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
     /* --- 鎖定畫面 --- */
-    #lock-screen-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 80px; z-index: 100; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; }
-    .time { font-size: 95px; font-weight: 600; margin: 0; letter-spacing: -2px; color: rgba(255, 255, 255, 0.9); }
-    .date { font-size: 20px; font-weight: 500; opacity: 0.9; color: white; margin-bottom: -10px; }
-    .swipe-text { position: absolute; bottom: 65px; color: white; font-size: 14px; opacity: 0.6; animation: pulse 2s infinite; }
+    #lock-screen-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 80px; z-index: 100; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; cursor: grab; }
+    .time { font-size: 95px; font-weight: 600; margin: 0; letter-spacing: -2px; color: rgba(255, 255, 255, 0.9); pointer-events: none; }
+    .date { font-size: 20px; font-weight: 500; opacity: 0.9; color: white; margin-bottom: -10px; pointer-events: none; }
+    .swipe-text { position: absolute; bottom: 65px; color: white; font-size: 14px; opacity: 0.6; animation: pulse 2s infinite; pointer-events: none; }
     @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
     
-    /* 🌟 關鍵修復：加入 touch-action: none 阻擋瀏覽器干擾 */
-    .home-indicator-area { position: absolute; bottom: 0; width: 100%; height: 50px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; cursor: grab; z-index: 150; touch-action: none; }
-    .home-indicator { width: 35%; height: 5px; background: white; border-radius: 10px; opacity: 0.8; transition: transform 0.2s ease; }
+    /* 🌟 底部橫條區：大幅加高感應區，並加入 touch-action 阻擋瀏覽器干擾 */
+    .home-indicator-area { position: absolute; bottom: 0; width: 100%; height: 80px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; cursor: grab; z-index: 150; touch-action: none; }
+    .home-indicator { width: 35%; height: 5px; background: white; border-radius: 10px; opacity: 0.8; }
 
     /* --- 主畫面系統 --- */
     #home-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; opacity: 0; transform: scale(0.9); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; }
@@ -53,13 +53,7 @@
     .clickable:active { transform: scale(0.9) !important; opacity: 0.7; }
 
     /* --- App 運行層 --- */
-    #app-layer {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: #f2f2f7; z-index: 80; display: flex; flex-direction: column;
-      transform: translateY(100vh) scale(0.9); opacity: 0; pointer-events: none;
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      border-radius: 40px; overflow: hidden;
-    }
+    #app-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f2f2f7; z-index: 80; display: flex; flex-direction: column; transform: translateY(100vh) scale(0.9); opacity: 0; pointer-events: none; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 40px; overflow: hidden; }
     #app-header { padding: 50px 20px 15px 20px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; position: relative; z-index: 85; }
     #app-title { font-size: 18px; font-weight: 600; color: black; margin: 0; }
     #app-content { flex-grow: 1; overflow-y: auto; padding: 20px; color: black; }
@@ -101,10 +95,7 @@
         </div>
       </div>
       
-      <div class="page-dots" id="dots">
-        <div class="dot active"></div>
-        <div class="dot"></div>
-      </div>
+      <div class="page-dots" id="dots"><div class="dot active"></div><div class="dot"></div></div>
 
       <div class="dock-container">
         <div class="dock glass-panel">
@@ -117,28 +108,22 @@
     </div>
 
     <div id="app-layer">
-      <div id="app-header">
-        <h2 id="app-title">App Name</h2>
-      </div>
+      <div id="app-header"><h2 id="app-title">App Name</h2></div>
       <div id="app-content"></div>
-      <div class="home-indicator-area" id="app-home-area">
-        <div class="home-indicator"></div>
-      </div>
+      <div class="home-indicator-area" id="app-home-area"><div class="home-indicator"></div></div>
     </div>
 
     <div id="lock-screen-container">
       <div class="date" id="dateDisplay">載入中...</div>
       <h1 class="time" id="clock">--:--</h1>
       <div class="swipe-text" id="swipe-text">向上滑動來解鎖</div>
-      <div class="home-indicator-area" id="lock-home-area">
-        <div class="home-indicator"></div>
-      </div>
+      <div class="home-indicator-area"><div class="home-indicator"></div></div>
     </div>
 
   </div>
   
   <script>
-    // 🌟 關鍵修復：直接執行開機動畫，不等待圖片下載
+    // --- 開機動畫 ---
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => { document.getElementById('boot-progress').style.width = '100%'; }, 100);
       setTimeout(() => {
@@ -159,60 +144,76 @@
     }
     setInterval(updateClock, 1000); updateClock();
 
-    // --- 共用滑動邏輯包裝器 ---
-    function setupSwipe(elementId, onSwipeUpComplete) {
-      const area = document.getElementById(elementId);
-      if(!area) return;
-      let startY = 0, isDragging = false;
-      const target = area.parentElement;
+    // 🌟 1. 鎖定畫面無死角解鎖 (全畫面皆可滑)
+    const lockContainer = document.getElementById('lock-screen-container');
+    let lockStartY = 0, lockIsDragging = false;
 
-      area.addEventListener('mousedown', (e) => { startY = e.clientY; isDragging = true; target.style.transition = 'none'; });
-      area.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; isDragging = true; target.style.transition = 'none'; }, {passive: true});
+    lockContainer.addEventListener('mousedown', (e) => { lockStartY = e.clientY; lockIsDragging = true; lockContainer.style.transition = 'none'; });
+    lockContainer.addEventListener('touchstart', (e) => { lockStartY = e.touches[0].clientY; lockIsDragging = true; lockContainer.style.transition = 'none'; }, {passive: true});
 
-      const moveHandler = (y) => {
-        if (!isDragging) return;
-        let deltaY = y - startY;
-        if (deltaY < 0) target.style.transform = `translateY(${deltaY}px)`;
-      };
+    const lockMove = (y) => {
+      if (!lockIsDragging) return;
+      let deltaY = y - lockStartY;
+      if (deltaY < 0) lockContainer.style.transform = `translateY(${deltaY}px)`;
+    };
+    window.addEventListener('mousemove', (e) => lockMove(e.clientY));
+    window.addEventListener('touchmove', (e) => lockMove(e.touches[0].clientY), {passive: true});
+
+    const lockEnd = (y) => {
+      if (!lockIsDragging) return;
+      lockIsDragging = false;
+      let deltaY = y - lockStartY;
+      lockContainer.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
       
-      window.addEventListener('mousemove', (e) => moveHandler(e.clientY));
-      window.addEventListener('touchmove', (e) => moveHandler(e.touches[0].clientY), {passive: true});
+      if (deltaY < -100) { // 降低解鎖門檻
+        lockContainer.style.transform = 'translateY(-100vh)';
+        lockContainer.style.opacity = '0';
+        lockContainer.style.pointerEvents = 'none'; // 隱形並讓出點擊權
+        document.getElementById('home-screen').style.opacity = '1';
+        document.getElementById('home-screen').style.transform = 'scale(1)';
+      } else {
+        lockContainer.style.transform = 'translateY(0)'; 
+      }
+    };
+    window.addEventListener('mouseup', (e) => lockEnd(e.clientY));
+    window.addEventListener('touchend', (e) => lockEnd(e.changedTouches[0].clientY));
 
-      const endHandler = (y) => {
-        if (!isDragging) return;
-        isDragging = false;
-        let deltaY = y - startY;
-        target.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
-        
-        if (deltaY < -120) {
-          onSwipeUpComplete(target); 
-        } else {
-          target.style.transform = 'translateY(0)'; 
-        }
-      };
-      
-      window.addEventListener('mouseup', (e) => endHandler(e.clientY));
-      window.addEventListener('touchend', (e) => endHandler(e.changedTouches[0].clientY));
-    }
 
-    // 1. 綁定鎖定畫面的解鎖
-    setupSwipe('lock-home-area', (lockContainer) => {
-      lockContainer.style.transform = 'translateY(-100vh)';
-      lockContainer.style.opacity = '0';
-      lockContainer.style.pointerEvents = 'none'; // 徹底隱藏，不阻擋後續點擊
-      document.getElementById('home-screen').style.opacity = '1';
-      document.getElementById('home-screen').style.transform = 'scale(1)';
-    });
-
-    // 2. 綁定 App 的上滑退出
-    setupSwipe('app-home-area', (appLayer) => {
-      appLayer.style.transform = 'translateY(100vh) scale(0.9)';
-      appLayer.style.opacity = '0';
-      appLayer.style.pointerEvents = 'none';
-    });
-
-    // --- 開啟 App 邏輯 ---
+    // 🌟 2. App 上滑退出 (大幅增加感應區)
+    const appHomeArea = document.getElementById('app-home-area');
     const appLayer = document.getElementById('app-layer');
+    let appStartY = 0, appIsDragging = false;
+
+    appHomeArea.addEventListener('mousedown', (e) => { appStartY = e.clientY; appIsDragging = true; appLayer.style.transition = 'none'; });
+    appHomeArea.addEventListener('touchstart', (e) => { appStartY = e.touches[0].clientY; appIsDragging = true; appLayer.style.transition = 'none'; }, {passive: true});
+
+    const appMove = (y) => {
+      if (!appIsDragging) return;
+      let deltaY = y - appStartY;
+      if (deltaY < 0) appLayer.style.transform = `translateY(${deltaY}px) scale(0.95)`;
+    };
+    window.addEventListener('mousemove', (e) => appMove(e.clientY));
+    window.addEventListener('touchmove', (e) => appMove(e.touches[0].clientY), {passive: true});
+
+    const appEnd = (y) => {
+      if (!appIsDragging) return;
+      appIsDragging = false;
+      let deltaY = y - appStartY;
+      appLayer.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
+      
+      if (deltaY < -50) { // 只要輕輕往上一撥就關閉
+        appLayer.style.transform = 'translateY(100vh) scale(0.9)';
+        appLayer.style.opacity = '0';
+        appLayer.style.pointerEvents = 'none';
+      } else {
+        appLayer.style.transform = 'translateY(0) scale(1)'; 
+      }
+    };
+    window.addEventListener('mouseup', (e) => appEnd(e.clientY));
+    window.addEventListener('touchend', (e) => appEnd(e.changedTouches[0].clientY));
+
+
+    // --- 3. 開啟 App 動畫 ---
     const appTitle = document.getElementById('app-title');
     const appContent = document.getElementById('app-content');
 
@@ -250,7 +251,7 @@
             appContent.innerHTML = `
               <div style="display: flex; flex-direction: column; height: 70%; justify-content: center; align-items: center; color: #888;">
                 <div style="font-size: 60px; margin-bottom: 20px;">🛠️</div>
-                <div>${appName} 的開發者介面建置中...</div>
+                <div>${appName} 開發中...</div>
               </div>`;
           }
           
@@ -261,7 +262,7 @@
       });
     }, 500);
 
-    // --- 滑動換頁連動小圓點 ---
+    // --- 4. 滑動換頁連動小圓點 ---
     const carousel = document.getElementById('carousel');
     const dots = document.querySelectorAll('.dot');
     if(carousel && dots.length > 0) {
