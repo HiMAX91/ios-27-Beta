@@ -2,74 +2,79 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>iOS 27 Beta 模擬器</title>
   <style>
-    /* --- 核心設定 --- */
-    body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-user-select: none; background-color: black; touch-action: none; }
-    .iphone-screen { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: radial-gradient(circle at 50% 0%, #e2d1c3 0%, #b8a698 40%, #756a64 100%); }
+    /* --- 核心設定 (修復下方被切掉的 Bug) --- */
+    body, html { margin: 0; padding: 0; height: 100vh; height: 100dvh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-user-select: none; background-color: black; touch-action: none; }
+    .iphone-screen { position: relative; width: 100vw; height: 100dvh; overflow: hidden; background: radial-gradient(circle at 50% 0%, #e2d1c3 0%, #b8a698 40%, #756a64 100%); }
 
-    /* --- 開機與鎖定畫面 --- */
+    /* --- 開機畫面 --- */
     #boot-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: black; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
     .apple-logo { width: 80px; height: 80px; margin-bottom: 40px; fill: white; }
     .progress-track { width: 150px; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; overflow: hidden; }
     .progress-bar { width: 0%; height: 100%; background: white; border-radius: 2px; transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-    #lock-screen-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 80px; z-index: 100; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; cursor: grab; }
+    /* --- 鎖定畫面 --- */
+    #lock-screen-container { position: absolute; top: 0; left: 0; width: 100%; height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 10vh; z-index: 100; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; cursor: grab; }
     .time { font-size: 95px; font-weight: 600; margin: 0; letter-spacing: -2px; color: rgba(255, 255, 255, 0.9); pointer-events: none; }
     .date { font-size: 20px; font-weight: 500; opacity: 0.9; color: white; margin-bottom: -10px; pointer-events: none; }
-    .swipe-text { position: absolute; bottom: 65px; color: white; font-size: 14px; opacity: 0.6; animation: pulse 2s infinite; pointer-events: none; }
+    .swipe-text { position: absolute; bottom: calc(65px + env(safe-area-inset-bottom)); color: white; font-size: 14px; opacity: 0.6; animation: pulse 2s infinite; pointer-events: none; }
     @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
-    
-    .home-indicator-area { position: absolute; bottom: 0; width: 100%; height: 80px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; cursor: grab; z-index: 150; touch-action: none; }
+    .home-indicator-area { position: absolute; bottom: 0; width: 100%; height: calc(80px + env(safe-area-inset-bottom)); display: flex; justify-content: center; align-items: flex-end; padding-bottom: calc(15px + env(safe-area-inset-bottom)); cursor: grab; z-index: 150; touch-action: none; }
     .home-indicator { width: 35%; height: 5px; background: white; border-radius: 10px; opacity: 0.8; }
 
     /* --- 主畫面系統 --- */
-    #home-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; opacity: 0; transform: scale(0.9); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; }
-    .carousel { display: flex; flex-grow: 1; width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    #home-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100dvh; z-index: 10; opacity: 0; transform: scale(0.9); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
+    .carousel { display: flex; flex-grow: 1; width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; margin-top: env(safe-area-inset-top); }
     .carousel::-webkit-scrollbar { display: none; }
-    .page { min-width: 100vw; padding: 50px 20px 20px 20px; box-sizing: border-box; display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 75px; gap: 15px; align-content: start; scroll-snap-align: start; }
-    
-    .page-dots { display: flex; justify-content: center; align-items: center; height: 20px; margin-bottom: 10px; gap: 8px; }
+    .page { min-width: 100vw; padding: 40px 20px 0 20px; box-sizing: border-box; display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 75px; gap: 15px; align-content: start; scroll-snap-align: start; }
+    .page-dots { display: flex; justify-content: center; align-items: center; height: 15px; margin: 5px 0; gap: 8px; flex-shrink: 0; }
     .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s; }
     .dot.active { background: rgba(255,255,255,0.9); width: 10px; height: 10px; }
-    .dock-container { padding: 0 20px 20px 20px; }
-
-    /* --- Liquid Glass UI --- */
-    .glass-panel { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; color: white; text-align: center; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; }
     
-    /* 🌟 修正 Dock 變垂直的 Bug：強制宣告 grid 和 row，覆寫掉 glass-panel 的設定 */
-    .dock { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; flex-direction: row !important; gap: 15px; padding: 15px; border-radius: 35px; }
-    .dock .app-icon { height: 60px; font-size: 28px; }
+    /* 🌟 Liquid Glass UI (無藍色偏、純粹透明) */
+    .glass-panel { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; color: white; text-align: center; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+    
+    /* 修復 Dock 被切掉的佈局 */
+    .dock-container { padding: 0 20px 20px 20px; padding-bottom: calc(25px + env(safe-area-inset-bottom)); flex-shrink: 0; }
+    .dock { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 35px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); display: flex; flex-direction: row; justify-content: space-around; align-items: center; padding: 15px; }
+    .dock .app-icon { font-size: 11px; display: flex; flex-direction: column; align-items: center; }
+    .dock .app-icon span { font-size: 32px; margin-bottom: 0; }
 
+    /* 元件尺寸與排版 */
     .widget-2x2 { grid-column: span 2; grid-row: span 2; border-radius: 30px; }
     .widget-4x2 { grid-column: span 4; grid-row: span 2; border-radius: 30px; align-items: flex-start; padding: 20px !important; box-sizing: border-box; }
-    .app-icon { font-size: 12px; }
-    .app-icon span { font-size: 28px; margin-bottom: 5px; }
-    .search-bar { grid-column: span 4; grid-row: span 1; border-radius: 20px; flex-direction: row; font-size: 15px; color: rgba(255,255,255,0.7); }
-    .photo-widget { padding: 0 !important; overflow: hidden; border: none; }
+    .app-icon { font-size: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 500; }
+    .app-icon span { font-size: 32px; margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+    .search-bar { grid-column: span 4; grid-row: span 1; border-radius: 20px; flex-direction: row; font-size: 15px; color: rgba(255,255,255,0.9); font-weight: 500; }
     .photo-widget img { width: 100%; height: 100%; object-fit: cover; }
     .calendar-date { font-size: 45px; font-weight: 300; }
     .calendar-day { font-size: 14px; font-weight: 600; color: #ff3b30; }
-    .clickable { cursor: pointer; transition: transform 0.1s ease, opacity 0.1s ease; }
-    .clickable:active { transform: scale(0.9) !important; opacity: 0.7; }
+    .clickable { cursor: pointer; transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease; }
+    .clickable:active { transform: scale(0.85) !important; opacity: 0.7; }
 
-    /* --- App 運行層 --- */
-    #app-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f2f2f7; z-index: 80; display: flex; flex-direction: column; transform: translateY(100vh) scale(0.9); opacity: 0; pointer-events: none; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 40px; overflow: hidden; }
-    #app-header { padding: 50px 20px 15px 20px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; position: relative; z-index: 85; }
-    #app-title { font-size: 18px; font-weight: 600; color: black; margin: 0; }
-    #app-content { flex-grow: 1; overflow-y: auto; color: black; background: #fff; } /* 內容區塊背景 */
-    #app-home-area { z-index: 90; position: absolute; bottom: 0; width: 100%; height: 50px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; }
-    #app-home-area .home-indicator { background: black; }
+    /* --- 🌟 升級版 App 運行層 --- */
+    #app-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100dvh; background: #fff; z-index: 200; display: flex; flex-direction: column; transform: translateY(100dvh) scale(0.9); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 40px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+    #app-header { padding: calc(40px + env(safe-area-inset-top)) 20px 15px 20px; background: rgba(250, 250, 250, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid rgba(0,0,0,0.08); display: flex; justify-content: center; align-items: center; position: relative; z-index: 85; }
+    #app-title { font-size: 17px; font-weight: 600; color: black; margin: 0; letter-spacing: -0.5px; }
+    #app-content { flex-grow: 1; overflow-y: auto; background: #f2f2f7; scrollbar-width: none; }
+    #app-content::-webkit-scrollbar { display: none; }
+    #app-home-area { z-index: 250; position: absolute; bottom: 0; width: 100%; height: calc(50px + env(safe-area-inset-bottom)); display: flex; justify-content: center; align-items: flex-end; padding-bottom: calc(15px + env(safe-area-inset-bottom)); touch-action: none; cursor: grab; }
+    #app-home-area .home-indicator { background: black; width: 40%; height: 5px; border-radius: 10px; }
+
+    /* 各種 App 內部的精緻樣式 */
+    .app-card { background: white; border-radius: 18px; padding: 15px; margin: 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .chat-bubble { max-width: 70%; padding: 12px 16px; border-radius: 20px; margin-bottom: 15px; font-size: 15px; line-height: 1.4; }
+    .chat-left { background: #e9e9eb; color: black; align-self: flex-start; border-bottom-left-radius: 5px; }
+    .chat-right { background: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 5px; }
   </style>
 </head>
 <body>
   <div class="iphone-screen">
     
     <div id="boot-screen">
-      <svg class="apple-logo" viewBox="0 0 170 170">
-        <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.24 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69.0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.18-14.34-3.18-4.24 0-8.99 1.06-14.23 3.18-5.23 2.13-9.67 3.18-13.32 3.18-5.27-.12-10.12-2.36-14.54-6.71-3.03-2.88-6.9-7.53-11.6-13.94-5.94-8.12-10.42-17.53-13.43-28.24-3.06-10.82-4.61-21.35-4.65-31.59-.06-14.65 4.06-26.41 12.37-35.29 5.51-5.94 11.96-9.15 19.34-9.64 4.54-.36 9.77 1.09 15.66 4.35 5.89 3.26 9.87 4.91 11.94 4.91 1.94 0 6.06-1.74 12.35-5.23 6.35-3.47 11.83-5.06 16.42-4.76 11.75.47 21.05 4.88 27.88 13.23-10.3 6.24-15.35 15.35-15.17 27.35.18 10.94 4.3 19.82 12.35 26.65 1.58 1.29 3.35 2.47 5.3 3.53-1.66 4.82-3.6 9.53-5.83 14.12zM113.11 32.18c-5.18 2.24-10.65 3.41-16.41 3.53-1.06-10.76 2.82-19.82 11.64-27.17 4.94-4.12 10.47-6.29 16.59-6.53.88 10.82-2.71 20.76-10.64 28.05-3.36 3.12-7.06 5.12-11.18 6.12z"/>
-      </svg>
+      <svg class="apple-logo" viewBox="0 0 170 170"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.24 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69.0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.18-14.34-3.18-4.24 0-8.99 1.06-14.23 3.18-5.23 2.13-9.67 3.18-13.32 3.18-5.27-.12-10.12-2.36-14.54-6.71-3.03-2.88-6.9-7.53-11.6-13.94-5.94-8.12-10.42-17.53-13.43-28.24-3.06-10.82-4.61-21.35-4.65-31.59-.06-14.65 4.06-26.41 12.37-35.29 5.51-5.94 11.96-9.15 19.34-9.64 4.54-.36 9.77 1.09 15.66 4.35 5.89 3.26 9.87 4.91 11.94 4.91 1.94 0 6.06-1.74 12.35-5.23 6.35-3.47 11.83-5.06 16.42-4.76 11.75.47 21.05 4.88 27.88 13.23-10.3 6.24-15.35 15.35-15.17 27.35.18 10.94 4.3 19.82 12.35 26.65 1.58 1.29 3.35 2.47 5.3 3.53-1.66 4.82-3.6 9.53-5.83 14.12zM113.11 32.18c-5.18 2.24-10.65 3.41-16.41 3.53-1.06-10.76 2.82-19.82 11.64-27.17 4.94-4.12 10.47-6.29 16.59-6.53.88 10.82-2.71 20.76-10.64 28.05-3.36 3.12-7.06 5.12-11.18 6.12z"/></svg>
       <div class="progress-track"><div class="progress-bar" id="boot-progress"></div></div>
     </div>
 
@@ -77,13 +82,13 @@
       <div class="carousel" id="carousel">
         <div class="page">
           <div class="search-bar glass-panel clickable" data-name="App 資料庫">🔍 App 資料庫</div>
-          <div class="widget-2x2 glass-panel clickable" data-name="時鐘"><span style="font-size: 35px;">⌚️</span></div>
+          <div class="widget-2x2 glass-panel clickable" data-name="時鐘"><span style="font-size: 40px; margin:0;">⌚️</span></div>
           <div class="widget-2x2 glass-panel clickable" data-name="行事曆"><div class="calendar-day" id="widget-day">週六</div><div class="calendar-date" id="widget-date">20</div></div>
-          <div class="widget-4x2 glass-panel clickable" data-name="天氣"><div style="font-size: 28px; font-weight: 300;">台北市 28°C</div><div style="font-size: 14px; opacity: 0.7; margin-top: 5px;">信義區晴時多雲 · 降雨機率 10%</div></div>
-          <div class="app-icon glass-panel clickable" data-name="App Store"><span>A</span>App Store</div>
+          <div class="widget-4x2 glass-panel clickable" data-name="天氣"><div style="font-size: 32px; font-weight: 300; letter-spacing:-1px;">內湖區 28°C</div><div style="font-size: 14px; opacity: 0.8; margin-top: 5px;">晴時多雲 · 降雨機率 10%</div></div>
+          <div class="app-icon glass-panel clickable" data-name="App Store"><span>🅰️</span>App Store</div>
           <div class="app-icon glass-panel clickable" data-name="地圖"><span>🗺️</span>地圖</div>
           <div class="app-icon glass-panel clickable" data-name="備忘錄"><span>📝</span>備忘錄</div>
-          <div class="app-icon glass-panel clickable" data-name="設定"><span>⚙️</span>設定</div>
+          <div class="app-icon glass-panel clickable" data-name="照片"><span>🌺</span>照片</div>
         </div>
         
         <div class="page">
@@ -91,7 +96,7 @@
              <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop" alt="photo" loading="lazy">
           </div>
           <div class="app-icon glass-panel clickable" data-name="YouTube"><span>▶️</span>YouTube</div>
-          <div class="app-icon glass-panel clickable" data-name="Spotify"><span>🎵</span>Spotify</div>
+          <div class="app-icon glass-panel clickable" data-name="音樂"><span>🎵</span>音樂</div>
           <div class="app-icon glass-panel clickable" data-name="遊戲"><span>🎮</span>遊戲</div>
           <div class="app-icon glass-panel clickable" data-name="相機"><span>📷</span>相機</div>
         </div>
@@ -100,11 +105,11 @@
       <div class="page-dots" id="dots"><div class="dot active"></div><div class="dot"></div></div>
 
       <div class="dock-container">
-        <div class="dock glass-panel">
-          <div class="app-icon clickable" data-name="電話">📞</div>
-          <div class="app-icon clickable" data-name="Safari">🧭</div>
-          <div class="app-icon clickable" data-name="訊息">💬</div>
-          <div class="app-icon clickable" data-name="音樂">🎵</div>
+        <div class="dock">
+          <div class="app-icon clickable" data-name="電話"><span>📞</span>電話</div>
+          <div class="app-icon clickable" data-name="設定"><span>⚙️</span>設定</div>
+          <div class="app-icon clickable" data-name="訊息"><span>💬</span>訊息</div>
+          <div class="app-icon clickable" data-name="Safari"><span>🧭</span>Safari</div>
         </div>
       </div>
     </div>
@@ -149,33 +154,19 @@
     // --- 鎖定畫面解鎖 ---
     const lockContainer = document.getElementById('lock-screen-container');
     let lockStartY = 0, lockIsDragging = false;
-
     lockContainer.addEventListener('mousedown', (e) => { lockStartY = e.clientY; lockIsDragging = true; lockContainer.style.transition = 'none'; });
     lockContainer.addEventListener('touchstart', (e) => { lockStartY = e.touches[0].clientY; lockIsDragging = true; lockContainer.style.transition = 'none'; }, {passive: true});
-
-    const lockMove = (y) => {
-      if (!lockIsDragging) return;
-      let deltaY = y - lockStartY;
-      if (deltaY < 0) lockContainer.style.transform = `translateY(${deltaY}px)`;
-    };
+    const lockMove = (y) => { if (!lockIsDragging) return; let deltaY = y - lockStartY; if (deltaY < 0) lockContainer.style.transform = `translateY(${deltaY}px)`; };
     window.addEventListener('mousemove', (e) => lockMove(e.clientY));
     window.addEventListener('touchmove', (e) => lockMove(e.touches[0].clientY), {passive: true});
-
     const lockEnd = (y) => {
       if (!lockIsDragging) return;
-      lockIsDragging = false;
-      let deltaY = y - lockStartY;
+      lockIsDragging = false; let deltaY = y - lockStartY;
       lockContainer.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
-      
       if (deltaY < -100) { 
-        lockContainer.style.transform = 'translateY(-100vh)';
-        lockContainer.style.opacity = '0';
-        lockContainer.style.pointerEvents = 'none'; 
-        document.getElementById('home-screen').style.opacity = '1';
-        document.getElementById('home-screen').style.transform = 'scale(1)';
-      } else {
-        lockContainer.style.transform = 'translateY(0)'; 
-      }
+        lockContainer.style.transform = 'translateY(-100vh)'; lockContainer.style.opacity = '0'; lockContainer.style.pointerEvents = 'none'; 
+        document.getElementById('home-screen').style.opacity = '1'; document.getElementById('home-screen').style.transform = 'scale(1)';
+      } else { lockContainer.style.transform = 'translateY(0)'; }
     };
     window.addEventListener('mouseup', (e) => lockEnd(e.clientY));
     window.addEventListener('touchend', (e) => lockEnd(e.changedTouches[0].clientY));
@@ -184,36 +175,23 @@
     const appHomeArea = document.getElementById('app-home-area');
     const appLayer = document.getElementById('app-layer');
     let appStartY = 0, appIsDragging = false;
-
     appHomeArea.addEventListener('mousedown', (e) => { appStartY = e.clientY; appIsDragging = true; appLayer.style.transition = 'none'; });
     appHomeArea.addEventListener('touchstart', (e) => { appStartY = e.touches[0].clientY; appIsDragging = true; appLayer.style.transition = 'none'; }, {passive: true});
-
-    const appMove = (y) => {
-      if (!appIsDragging) return;
-      let deltaY = y - appStartY;
-      if (deltaY < 0) appLayer.style.transform = `translateY(${deltaY}px) scale(0.95)`;
-    };
+    const appMove = (y) => { if (!appIsDragging) return; let deltaY = y - appStartY; if (deltaY < 0) appLayer.style.transform = `translateY(${deltaY}px) scale(0.95)`; };
     window.addEventListener('mousemove', (e) => appMove(e.clientY));
     window.addEventListener('touchmove', (e) => appMove(e.touches[0].clientY), {passive: true});
-
     const appEnd = (y) => {
       if (!appIsDragging) return;
-      appIsDragging = false;
-      let deltaY = y - appStartY;
+      appIsDragging = false; let deltaY = y - appStartY;
       appLayer.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
-      
       if (deltaY < -50) { 
-        appLayer.style.transform = 'translateY(100vh) scale(0.9)';
-        appLayer.style.opacity = '0';
-        appLayer.style.pointerEvents = 'none';
-      } else {
-        appLayer.style.transform = 'translateY(0) scale(1)'; 
-      }
+        appLayer.style.transform = 'translateY(100vh) scale(0.9)'; appLayer.style.opacity = '0'; appLayer.style.pointerEvents = 'none';
+      } else { appLayer.style.transform = 'translateY(0) scale(1)'; }
     };
     window.addEventListener('mouseup', (e) => appEnd(e.clientY));
     window.addEventListener('touchend', (e) => appEnd(e.changedTouches[0].clientY));
 
-    // --- 🌟 全面解鎖：豐富的 App 內容介面 ---
+    // --- 🌟 全部 App 徹底精緻化 ---
     const appTitle = document.getElementById('app-title');
     const appContent = document.getElementById('app-content');
 
@@ -223,94 +201,50 @@
         item.addEventListener('click', () => {
           const appName = item.getAttribute('data-name');
           appTitle.innerText = appName;
+          appContent.style.background = "#f2f2f7"; // 預設背景
           
           if (appName === 'YouTube') {
-            appContent.innerHTML = `
-              <div style="background:#0f0f0f; height:100%; color:white;">
-                <div style="width:100%; height:220px; background:black; display:flex; justify-content:center; align-items:center;"><div style="font-size:50px;">▶️</div></div>
-                <div style="padding:15px;">
-                  <h3 style="margin:0; font-size:16px;">GTA6 官方預告片 - 完美重現</h3>
-                  <p style="color:#aaa; font-size:12px; margin-top:5px;">1,000 萬次觀看 · 1 小時前</p>
-                </div>
-              </div>`;
-          } else if (appName === 'Spotify' || appName === '音樂') {
-            appContent.innerHTML = `
-              <div style="text-align:center; padding-top:40px; background:linear-gradient(#2b2b2b, #121212); height:100%; color:white; padding-bottom:80px; box-sizing:border-box;">
-                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&h=300&fit=crop" style="width:250px; height:250px; border-radius:15px; margin-bottom:30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                <h2 style="margin:0;">Memories-608</h2>
-                <p style="color:#b3b3b3; margin-top:5px;">Class 608</p>
-                <div style="font-size:40px; margin-top:30px; display:flex; justify-content:space-evenly; align-items:center;">
-                  <span style="font-size:24px;">⏮️</span> <span>▶️</span> <span style="font-size:24px;">⏭️</span>
-                </div>
-                <div style="width: 80%; height: 4px; background: #555; border-radius: 2px; margin: 30px auto; position: relative;">
-                  <div style="width: 30%; height: 100%; background: white; border-radius: 2px;"></div>
-                </div>
-              </div>`;
-          } else if (appName === '相機') {
-            appContent.innerHTML = `
-              <div style="background:black; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding-bottom: 70px; box-sizing: border-box;">
-                 <div style="height:80px; display:flex; justify-content:space-between; align-items:center; padding:0 20px; color:white; font-size:20px;"><span>⚡️</span><span> HDR</span><span>⏱️</span></div>
-                 <div style="flex-grow:1; border:1px solid #333; margin:0 2px;"></div>
-                 <div style="height:120px; display:flex; justify-content:space-evenly; align-items:center; color:white;">
-                   <div style="width:40px; height:40px; border-radius:5px; background:#333;"></div>
-                   <div style="width:70px; height:70px; border-radius:50%; background:white; border:4px solid #aaa;"></div>
-                   <div style="font-size:30px;">🔄</div>
-                 </div>
-              </div>`;
-          } else if (appName === '遊戲') {
-            appContent.innerHTML = `
-              <div style="height:100%; background:#5b8731; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; font-family:monospace; padding-bottom: 50px;">
-                 <div style="font-size:70px;">🟩</div>
-                 <h2 style="margin-top:10px;">Minecraft</h2>
-                 <p style="color:#ddd; margin-top:-10px;">Pocket Edition</p>
-                 <div style="padding:15px 50px; background:#8a8a8a; border:3px solid #000; margin-top:30px; font-weight:bold; font-size:20px;">PLAY</div>
-              </div>`;
-          } else if (appName === '電話') {
-            appContent.innerHTML = `
-              <div style="padding:20px; background:white; height:100%;">
-                <h1 style="margin-top:0;">通話紀錄</h1>
-                <div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                  <strong style="color:red;">爺爺</strong><span style="color:#888;">昨天</span>
-                </div>
-                <div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                  <strong>曾祖母</strong><span style="color:#888;">星期三</span>
-                </div>
-                <div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                  <strong>語音信箱</strong><span style="color:#888;">星期一</span>
-                </div>
-              </div>`;
-          } else if (appName === 'Safari') {
-            appContent.innerHTML = `
-              <div style="padding: 20px; background:white; height:100%;">
-                <div style="background: #f2f2f7; border-radius: 15px; padding: 15px; text-align: center; color: #888; margin-bottom: 30px;">🔍 搜尋或輸入網站名稱</div>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; font-size: 12px; color: #555;">
-                  <div><div style="font-size:35px; margin-bottom:5px;">🍎</div>Apple</div>
-                  <div><div style="font-size:35px; margin-bottom:5px;">📰</div>新聞</div>
-                  <div><div style="font-size:35px; margin-bottom:5px;">🛒</div>購物</div>
-                  <div><div style="font-size:35px; margin-bottom:5px;">☁️</div>iCloud</div>
-                </div>
-              </div>`;
-          } else if (appName === '設定') {
-            appContent.innerHTML = `
-              <div style="padding: 20px; background:#f2f2f7; height:100%;">
-                <div style="background: white; border-radius: 15px; overflow: hidden; margin-bottom: 20px;">
-                  <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
-                    <div style="width: 30px; height: 30px; background: #ff9500; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✈️</div>
-                    飛航模式 <span style="margin-left: auto; color: #ccc;">關閉</span>
-                  </div>
-                  <div style="padding: 15px; display: flex; align-items: center;">
-                    <div style="width: 30px; height: 30px; background: #007aff; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">📶</div>
-                    Wi-Fi <span style="margin-left: auto; color: #888;">TP-Link_5G</span>
-                  </div>
-                </div>
-              </div>`;
-          } else {
-            // 剩下的保留為開發中
-            appContent.innerHTML = `
-              <div style="display: flex; flex-direction: column; height: 70%; justify-content: center; align-items: center; color: #888; background:white;">
-                <div style="font-size: 60px; margin-bottom: 20px;">🛠️</div>
-                <div>${appName} 功能尚在開發中...</div>
-              </div>`;
+            appContent.style.background = "#0f0f0f";
+            appContent.innerHTML = `<div style="background:#0f0f0f; height:100%; color:white;"><div style="width:100%; height:250px; background:black; display:flex; justify-content:center; align-items:center;"><div style="font-size:60px;">▶️</div></div><div style="padding:15px;"><h3 style="margin:0;">Minecraft 電影版官方預告</h3><p style="color:#aaa; font-size:14px; margin-top:5px;">Warner Bros. · 1,500 萬次觀看</p></div><div style="padding:15px; border-top:1px solid #333;"><div style="display:flex; align-items:center;"><div style="width:40px; height:40px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:20px;">👤</div><div style="margin-left:15px;"><div style="font-weight:bold;">IGN</div><div style="color:#aaa; font-size:12px;">500萬 位訂閱者</div></div></div></div></div>`;
+          } 
+          else if (appName === '音樂') {
+            appContent.style.background = "linear-gradient(#2b2b2b, #121212)";
+            appContent.innerHTML = `<div style="text-align:center; padding-top:40px; height:100%; color:white; padding-bottom:80px; box-sizing:border-box;"><div style="width:280px; height:280px; background:linear-gradient(45deg, #ff9a9e, #fecfef); border-radius:15px; margin:0 auto 30px auto; display:flex; align-items:center; justify-content:center; font-size:80px; box-shadow: 0 10px 40px rgba(0,0,0,0.6);">🎓</div><h2 style="margin:0; font-size:26px;">Memories-608</h2><p style="color:#b3b3b3; margin-top:5px; font-size:16px;">608班畢業專題</p><div style="width: 85%; height: 6px; background: #555; border-radius: 3px; margin: 40px auto 20px auto; position: relative;"><div style="width: 45%; height: 100%; background: white; border-radius: 3px;"></div></div><div style="font-size:40px; margin-top:20px; display:flex; justify-content:space-evenly; align-items:center;"><span>⏮️</span> <span style="font-size:60px;">⏸️</span> <span>⏭️</span></div></div>`;
+          } 
+          else if (appName === '相機') {
+            appContent.style.background = "black";
+            appContent.innerHTML = `<div style="background:black; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding-bottom: 90px; box-sizing: border-box;"><div style="height:80px; display:flex; justify-content:space-between; align-items:center; padding:0 25px; color:white; font-size:22px;"><span>⚡️</span><span> HDR</span><span>⏱️</span></div><div style="flex-grow:1; border:1px solid #333; margin:0 2px;"></div><div style="height:120px; display:flex; justify-content:space-evenly; align-items:center; color:white; margin-top:20px;"><div style="width:55px; height:55px; border-radius:12px; background:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=100') center/cover;"></div><div style="width:75px; height:75px; border-radius:50%; background:white; border:4px solid #aaa;"></div><div style="font-size:35px; background:rgba(255,255,255,0.15); border-radius:50%; padding:10px;">🔄</div></div></div>`;
+          } 
+          else if (appName === '遊戲') {
+            appContent.innerHTML = `<div style="height:100%; background:linear-gradient(#6eb844, #448021); display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; font-family:monospace; padding-bottom: 50px;"><div style="font-size:90px; filter:drop-shadow(0 10px 10px rgba(0,0,0,0.5));">🟫</div><h2 style="margin-top:20px; font-size:35px; letter-spacing:2px; text-shadow: 2px 2px 0 #000;">Minecraft</h2><div style="padding:15px 70px; background:#8a8a8a; border:4px solid #000; margin-top:40px; font-weight:bold; font-size:28px; box-shadow: inset -4px -4px 0 rgba(0,0,0,0.3);">PLAY</div></div>`;
+          } 
+          else if (appName === '電話') {
+            appContent.innerHTML = `<div style="padding:20px; background:white; height:100%;"><h1 style="margin-top:0; font-size:32px; letter-spacing:-1px;">通話紀錄</h1><div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; font-size:18px; align-items:center;"><strong style="color:red;">爺爺</strong><span style="color:#888; font-size:15px;">昨天 📱</span></div><div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; font-size:18px; align-items:center;"><strong>曾祖母</strong><span style="color:#888; font-size:15px;">星期三 📞</span></div></div>`;
+          } 
+          else if (appName === 'Safari') {
+            appContent.innerHTML = `<div style="padding: 20px; background:white; height:100%;"><div style="background: #f2f2f7; border-radius: 15px; padding: 15px; text-align: center; color: #888; margin-bottom: 30px; font-size:16px;">🔍 搜尋或輸入網站名稱</div><div style="padding-bottom:15px; border-bottom:1px solid #eee; margin-bottom:15px; font-weight:bold; font-size:20px;">喜好項目</div><div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; font-size: 13px; color: #555;"><div><div style="font-size:45px; margin-bottom:5px;">🍎</div>Apple</div><div><div style="font-size:45px; margin-bottom:5px;">🤖</div>Google AI</div><div><div style="font-size:45px; margin-bottom:5px;">🐙</div>GitHub</div></div></div>`;
+          } 
+          else if (appName === '設定') {
+            appContent.innerHTML = `<div style="padding: 20px; height:100%;"><div class="app-card" style="margin:0 0 20px 0;"><div style="padding: 5px 0 15px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; font-size:18px;"><div style="width: 35px; height: 35px; background: #ff9500; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✈️</div>飛航模式 <span style="margin-left: auto; background:#e9e9eb; padding:2px 15px; border-radius:15px; font-size:14px; color:#888;">關閉</span></div><div style="padding: 15px 0 5px 0; display: flex; align-items: center; font-size:18px;"><div style="width: 35px; height: 35px; background: #007aff; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">📶</div>Wi-Fi <span style="margin-left: auto; color: #888; font-size:16px;">TP-Link_5G ></span></div></div></div>`;
+          } 
+          else if (appName === 'App Store') {
+            appContent.style.background = "white";
+            appContent.innerHTML = `<div style="padding: 20px;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h1 style="margin:0; font-size:34px; letter-spacing:-1px;">Today</h1><div style="width:35px; height:35px; background:#eee; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:20px;">👤</div></div><div style="width:100%; height:350px; background: url('https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=500') center/cover; border-radius:20px; display:flex; flex-direction:column; justify-content:flex-end; padding:20px; box-sizing:border-box; color:white; box-shadow:0 10px 20px rgba(0,0,0,0.1);"><p style="margin:0; font-weight:600; text-transform:uppercase; opacity:0.8;">必備設計工具</p><h2 style="margin:5px 0; font-size:28px;">Canva 輕鬆上手</h2></div></div>`;
+          } 
+          else if (appName === '地圖') {
+            appContent.style.padding = "0";
+            appContent.innerHTML = `<div style="position:relative; width:100%; height:100%; background:#e5e3df;"><img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" style="width:100%; height:100%; object-fit:cover; opacity:0.7;"><div style="position:absolute; top:20px; left:20px; right:20px; background:white; padding:15px 20px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.1); font-size:16px; color:#555; display:flex; align-items:center;">🔍 搜尋「六福村 蘇丹王大冒險」</div><div style="position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center;"><div style="font-size:40px; filter:drop-shadow(0 5px 5px rgba(0,0,0,0.3));">📍</div><div style="background:white; padding:5px 10px; border-radius:10px; font-size:12px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">台北市內湖區</div></div></div>`;
+          } 
+          else if (appName === '備忘錄') {
+            appContent.innerHTML = `<div style="padding: 20px;"><h1 style="margin:0 0 20px 0; color:#d4af37;">資料夾</h1><div class="app-card" style="margin:0; padding:0;"><div style="padding:15px 20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; font-weight:bold; font-size:16px;">📝 「Voice」角色設定稿 <span style="color:#888; font-weight:normal;">14頁</span></div><div style="padding:15px 20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; font-weight:bold; font-size:16px;">🏖️ 嘉義鹿港寒假遊記 <span style="color:#888; font-weight:normal;">2/10</span></div><div style="padding:15px 20px; display:flex; justify-content:space-between; font-weight:bold; font-size:16px;">🎓 memories-608 程式碼 <span style="color:#888; font-weight:normal;">今天</span></div></div></div>`;
+          } 
+          else if (appName === '照片') {
+            appContent.style.background = "white";
+            appContent.innerHTML = `<div style="padding: 20px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:15px;"><h1 style="margin:0;">圖庫</h1><span style="color:#007aff; font-weight:bold;">選取</span></div><div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:3px;"><img src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=300&fit=crop" style="width:100%; aspect-ratio:1; object-fit:cover;"><img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&fit=crop" style="width:100%; aspect-ratio:1; object-fit:cover;"><img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=300&fit=crop" style="width:100%; aspect-ratio:1; object-fit:cover;"><img src="https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?q=80&w=300&fit=crop" style="width:100%; aspect-ratio:1; object-fit:cover;"></div></div>`;
+          } 
+          else if (appName === '訊息') {
+            appContent.style.padding = "0";
+            appContent.innerHTML = `<div style="height:100%; display:flex; flex-direction:column;"><div style="padding:15px; text-align:center; border-bottom:1px solid #eee; font-weight:bold; background:rgba(250,250,250,0.9);">同學</div><div style="flex-grow:1; padding:20px; display:flex; flex-direction:column; overflow-y:auto;"><div style="text-align:center; font-size:12px; color:#888; margin-bottom:15px;">今天 晚上 8:40</div><div class="chat-bubble chat-left">欸，我們 608 班的畢業專題網站弄得怎麼樣了？</div><div class="chat-bubble chat-right">還在修 Firebase 的資料庫，快好了😎</div><div class="chat-bubble chat-left">太猛了吧！等你的連結！</div></div><div style="padding:15px 20px; border-top:1px solid #eee;"><div style="border:1px solid #ddd; border-radius:20px; padding:8px 15px; color:#aaa; font-size:15px;">iMessage</div></div></div>`;
           }
           
           appLayer.style.transform = 'translateY(0) scale(1)';
@@ -320,7 +254,6 @@
       });
     }, 500);
 
-    // --- 滑動換頁連動小圓點 ---
     const carousel = document.getElementById('carousel');
     const dots = document.querySelectorAll('.dot');
     if(carousel && dots.length > 0) {
