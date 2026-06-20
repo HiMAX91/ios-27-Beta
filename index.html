@@ -9,20 +9,18 @@
     body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-user-select: none; background-color: black; touch-action: none; }
     .iphone-screen { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: radial-gradient(circle at 50% 0%, #e2d1c3 0%, #b8a698 40%, #756a64 100%); }
 
-    /* --- 開機畫面 --- */
+    /* --- 開機與鎖定畫面 --- */
     #boot-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: black; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
     .apple-logo { width: 80px; height: 80px; margin-bottom: 40px; fill: white; }
     .progress-track { width: 150px; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; overflow: hidden; }
     .progress-bar { width: 0%; height: 100%; background: white; border-radius: 2px; transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-    /* --- 鎖定畫面 --- */
     #lock-screen-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 80px; z-index: 100; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; cursor: grab; }
     .time { font-size: 95px; font-weight: 600; margin: 0; letter-spacing: -2px; color: rgba(255, 255, 255, 0.9); pointer-events: none; }
     .date { font-size: 20px; font-weight: 500; opacity: 0.9; color: white; margin-bottom: -10px; pointer-events: none; }
     .swipe-text { position: absolute; bottom: 65px; color: white; font-size: 14px; opacity: 0.6; animation: pulse 2s infinite; pointer-events: none; }
     @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
     
-    /* 🌟 底部橫條區：大幅加高感應區，並加入 touch-action 阻擋瀏覽器干擾 */
     .home-indicator-area { position: absolute; bottom: 0; width: 100%; height: 80px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; cursor: grab; z-index: 150; touch-action: none; }
     .home-indicator { width: 35%; height: 5px; background: white; border-radius: 10px; opacity: 0.8; }
 
@@ -31,15 +29,19 @@
     .carousel { display: flex; flex-grow: 1; width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; }
     .carousel::-webkit-scrollbar { display: none; }
     .page { min-width: 100vw; padding: 50px 20px 20px 20px; box-sizing: border-box; display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 75px; gap: 15px; align-content: start; scroll-snap-align: start; }
+    
     .page-dots { display: flex; justify-content: center; align-items: center; height: 20px; margin-bottom: 10px; gap: 8px; }
     .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s; }
     .dot.active { background: rgba(255,255,255,0.9); width: 10px; height: 10px; }
     .dock-container { padding: 0 20px 20px 20px; }
-    .dock { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 15px; border-radius: 35px; }
-    .dock .app-icon { height: 60px; font-size: 28px; }
 
     /* --- Liquid Glass UI --- */
     .glass-panel { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; color: white; text-align: center; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    
+    /* 🌟 修正 Dock 變垂直的 Bug：強制宣告 grid 和 row，覆寫掉 glass-panel 的設定 */
+    .dock { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; flex-direction: row !important; gap: 15px; padding: 15px; border-radius: 35px; }
+    .dock .app-icon { height: 60px; font-size: 28px; }
+
     .widget-2x2 { grid-column: span 2; grid-row: span 2; border-radius: 30px; }
     .widget-4x2 { grid-column: span 4; grid-row: span 2; border-radius: 30px; align-items: flex-start; padding: 20px !important; box-sizing: border-box; }
     .app-icon { font-size: 12px; }
@@ -56,8 +58,8 @@
     #app-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f2f2f7; z-index: 80; display: flex; flex-direction: column; transform: translateY(100vh) scale(0.9); opacity: 0; pointer-events: none; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 40px; overflow: hidden; }
     #app-header { padding: 50px 20px 15px 20px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; position: relative; z-index: 85; }
     #app-title { font-size: 18px; font-weight: 600; color: black; margin: 0; }
-    #app-content { flex-grow: 1; overflow-y: auto; padding: 20px; color: black; }
-    #app-home-area { z-index: 90; }
+    #app-content { flex-grow: 1; overflow-y: auto; color: black; background: #fff; } /* 內容區塊背景 */
+    #app-home-area { z-index: 90; position: absolute; bottom: 0; width: 100%; height: 50px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; }
     #app-home-area .home-indicator { background: black; }
   </style>
 </head>
@@ -77,7 +79,7 @@
           <div class="search-bar glass-panel clickable" data-name="App 資料庫">🔍 App 資料庫</div>
           <div class="widget-2x2 glass-panel clickable" data-name="時鐘"><span style="font-size: 35px;">⌚️</span></div>
           <div class="widget-2x2 glass-panel clickable" data-name="行事曆"><div class="calendar-day" id="widget-day">週六</div><div class="calendar-date" id="widget-date">20</div></div>
-          <div class="widget-4x2 glass-panel clickable" data-name="天氣"><div style="font-size: 28px; font-weight: 300;">內湖區 28°C</div><div style="font-size: 14px; opacity: 0.7; margin-top: 5px;">晴時多雲 · 降雨機率 10%</div></div>
+          <div class="widget-4x2 glass-panel clickable" data-name="天氣"><div style="font-size: 28px; font-weight: 300;">台北市 28°C</div><div style="font-size: 14px; opacity: 0.7; margin-top: 5px;">信義區晴時多雲 · 降雨機率 10%</div></div>
           <div class="app-icon glass-panel clickable" data-name="App Store"><span>A</span>App Store</div>
           <div class="app-icon glass-panel clickable" data-name="地圖"><span>🗺️</span>地圖</div>
           <div class="app-icon glass-panel clickable" data-name="備忘錄"><span>📝</span>備忘錄</div>
@@ -117,7 +119,7 @@
       <div class="date" id="dateDisplay">載入中...</div>
       <h1 class="time" id="clock">--:--</h1>
       <div class="swipe-text" id="swipe-text">向上滑動來解鎖</div>
-      <div class="home-indicator-area"><div class="home-indicator"></div></div>
+      <div class="home-indicator-area" id="lock-home-area"><div class="home-indicator"></div></div>
     </div>
 
   </div>
@@ -144,7 +146,7 @@
     }
     setInterval(updateClock, 1000); updateClock();
 
-    // 🌟 1. 鎖定畫面無死角解鎖 (全畫面皆可滑)
+    // --- 鎖定畫面解鎖 ---
     const lockContainer = document.getElementById('lock-screen-container');
     let lockStartY = 0, lockIsDragging = false;
 
@@ -165,10 +167,10 @@
       let deltaY = y - lockStartY;
       lockContainer.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
       
-      if (deltaY < -100) { // 降低解鎖門檻
+      if (deltaY < -100) { 
         lockContainer.style.transform = 'translateY(-100vh)';
         lockContainer.style.opacity = '0';
-        lockContainer.style.pointerEvents = 'none'; // 隱形並讓出點擊權
+        lockContainer.style.pointerEvents = 'none'; 
         document.getElementById('home-screen').style.opacity = '1';
         document.getElementById('home-screen').style.transform = 'scale(1)';
       } else {
@@ -178,8 +180,7 @@
     window.addEventListener('mouseup', (e) => lockEnd(e.clientY));
     window.addEventListener('touchend', (e) => lockEnd(e.changedTouches[0].clientY));
 
-
-    // 🌟 2. App 上滑退出 (大幅增加感應區)
+    // --- App 上滑退出 ---
     const appHomeArea = document.getElementById('app-home-area');
     const appLayer = document.getElementById('app-layer');
     let appStartY = 0, appIsDragging = false;
@@ -201,7 +202,7 @@
       let deltaY = y - appStartY;
       appLayer.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
       
-      if (deltaY < -50) { // 只要輕輕往上一撥就關閉
+      if (deltaY < -50) { 
         appLayer.style.transform = 'translateY(100vh) scale(0.9)';
         appLayer.style.opacity = '0';
         appLayer.style.pointerEvents = 'none';
@@ -212,8 +213,7 @@
     window.addEventListener('mouseup', (e) => appEnd(e.clientY));
     window.addEventListener('touchend', (e) => appEnd(e.changedTouches[0].clientY));
 
-
-    // --- 3. 開啟 App 動畫 ---
+    // --- 🌟 全面解鎖：豐富的 App 內容介面 ---
     const appTitle = document.getElementById('app-title');
     const appContent = document.getElementById('app-content');
 
@@ -224,34 +224,92 @@
           const appName = item.getAttribute('data-name');
           appTitle.innerText = appName;
           
-          if (appName === 'Safari') {
+          if (appName === 'YouTube') {
             appContent.innerHTML = `
-              <div style="background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;">
-                <div style="color: #888; font-size: 14px; text-align: center;">🔍 搜尋或輸入網站名稱</div>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center; font-size: 12px; color: #555;">
-                <div><div style="font-size:30px; margin-bottom:5px;">🍎</div>Apple</div>
-                <div><div style="font-size:30px; margin-bottom:5px;">📰</div>新聞</div>
-                <div><div style="font-size:30px; margin-bottom:5px;">🛒</div>購物</div>
-                <div><div style="font-size:30px; margin-bottom:5px;">☁️</div>iCloud</div>
+              <div style="background:#0f0f0f; height:100%; color:white;">
+                <div style="width:100%; height:220px; background:black; display:flex; justify-content:center; align-items:center;"><div style="font-size:50px;">▶️</div></div>
+                <div style="padding:15px;">
+                  <h3 style="margin:0; font-size:16px;">GTA6 官方預告片 - 完美重現</h3>
+                  <p style="color:#aaa; font-size:12px; margin-top:5px;">1,000 萬次觀看 · 1 小時前</p>
+                </div>
+              </div>`;
+          } else if (appName === 'Spotify' || appName === '音樂') {
+            appContent.innerHTML = `
+              <div style="text-align:center; padding-top:40px; background:linear-gradient(#2b2b2b, #121212); height:100%; color:white; padding-bottom:80px; box-sizing:border-box;">
+                <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&h=300&fit=crop" style="width:250px; height:250px; border-radius:15px; margin-bottom:30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <h2 style="margin:0;">Memories-608</h2>
+                <p style="color:#b3b3b3; margin-top:5px;">Class 608</p>
+                <div style="font-size:40px; margin-top:30px; display:flex; justify-content:space-evenly; align-items:center;">
+                  <span style="font-size:24px;">⏮️</span> <span>▶️</span> <span style="font-size:24px;">⏭️</span>
+                </div>
+                <div style="width: 80%; height: 4px; background: #555; border-radius: 2px; margin: 30px auto; position: relative;">
+                  <div style="width: 30%; height: 100%; background: white; border-radius: 2px;"></div>
+                </div>
+              </div>`;
+          } else if (appName === '相機') {
+            appContent.innerHTML = `
+              <div style="background:black; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding-bottom: 70px; box-sizing: border-box;">
+                 <div style="height:80px; display:flex; justify-content:space-between; align-items:center; padding:0 20px; color:white; font-size:20px;"><span>⚡️</span><span> HDR</span><span>⏱️</span></div>
+                 <div style="flex-grow:1; border:1px solid #333; margin:0 2px;"></div>
+                 <div style="height:120px; display:flex; justify-content:space-evenly; align-items:center; color:white;">
+                   <div style="width:40px; height:40px; border-radius:5px; background:#333;"></div>
+                   <div style="width:70px; height:70px; border-radius:50%; background:white; border:4px solid #aaa;"></div>
+                   <div style="font-size:30px;">🔄</div>
+                 </div>
+              </div>`;
+          } else if (appName === '遊戲') {
+            appContent.innerHTML = `
+              <div style="height:100%; background:#5b8731; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; font-family:monospace; padding-bottom: 50px;">
+                 <div style="font-size:70px;">🟩</div>
+                 <h2 style="margin-top:10px;">Minecraft</h2>
+                 <p style="color:#ddd; margin-top:-10px;">Pocket Edition</p>
+                 <div style="padding:15px 50px; background:#8a8a8a; border:3px solid #000; margin-top:30px; font-weight:bold; font-size:20px;">PLAY</div>
+              </div>`;
+          } else if (appName === '電話') {
+            appContent.innerHTML = `
+              <div style="padding:20px; background:white; height:100%;">
+                <h1 style="margin-top:0;">通話紀錄</h1>
+                <div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                  <strong style="color:red;">爺爺</strong><span style="color:#888;">昨天</span>
+                </div>
+                <div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                  <strong>曾祖母</strong><span style="color:#888;">星期三</span>
+                </div>
+                <div style="padding:15px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                  <strong>語音信箱</strong><span style="color:#888;">星期一</span>
+                </div>
+              </div>`;
+          } else if (appName === 'Safari') {
+            appContent.innerHTML = `
+              <div style="padding: 20px; background:white; height:100%;">
+                <div style="background: #f2f2f7; border-radius: 15px; padding: 15px; text-align: center; color: #888; margin-bottom: 30px;">🔍 搜尋或輸入網站名稱</div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; font-size: 12px; color: #555;">
+                  <div><div style="font-size:35px; margin-bottom:5px;">🍎</div>Apple</div>
+                  <div><div style="font-size:35px; margin-bottom:5px;">📰</div>新聞</div>
+                  <div><div style="font-size:35px; margin-bottom:5px;">🛒</div>購物</div>
+                  <div><div style="font-size:35px; margin-bottom:5px;">☁️</div>iCloud</div>
+                </div>
               </div>`;
           } else if (appName === '設定') {
             appContent.innerHTML = `
-              <div style="background: white; border-radius: 15px; overflow: hidden; margin-bottom: 20px;">
-                <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
-                  <div style="width: 30px; height: 30px; background: #007aff; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✈️</div>
-                  飛航模式 <span style="margin-left: auto; color: #ccc;">關閉</span>
-                </div>
-                <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
-                  <div style="width: 30px; height: 30px; background: #007aff; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">📶</div>
-                  Wi-Fi <span style="margin-left: auto; color: #888;">已連線</span>
+              <div style="padding: 20px; background:#f2f2f7; height:100%;">
+                <div style="background: white; border-radius: 15px; overflow: hidden; margin-bottom: 20px;">
+                  <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+                    <div style="width: 30px; height: 30px; background: #ff9500; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">✈️</div>
+                    飛航模式 <span style="margin-left: auto; color: #ccc;">關閉</span>
+                  </div>
+                  <div style="padding: 15px; display: flex; align-items: center;">
+                    <div style="width: 30px; height: 30px; background: #007aff; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">📶</div>
+                    Wi-Fi <span style="margin-left: auto; color: #888;">TP-Link_5G</span>
+                  </div>
                 </div>
               </div>`;
           } else {
+            // 剩下的保留為開發中
             appContent.innerHTML = `
-              <div style="display: flex; flex-direction: column; height: 70%; justify-content: center; align-items: center; color: #888;">
+              <div style="display: flex; flex-direction: column; height: 70%; justify-content: center; align-items: center; color: #888; background:white;">
                 <div style="font-size: 60px; margin-bottom: 20px;">🛠️</div>
-                <div>${appName} 開發中...</div>
+                <div>${appName} 功能尚在開發中...</div>
               </div>`;
           }
           
@@ -262,7 +320,7 @@
       });
     }, 500);
 
-    // --- 4. 滑動換頁連動小圓點 ---
+    // --- 滑動換頁連動小圓點 ---
     const carousel = document.getElementById('carousel');
     const dots = document.querySelectorAll('.dot');
     if(carousel && dots.length > 0) {
