@@ -1,66 +1,68 @@
-body, html { 
-  margin: 0; 
-  padding: 0; 
-  height: 100vh;
-  overflow: hidden; 
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-  user-select: none; 
-  -webkit-user-select: none; 
-  background-color: black;
-}
-
-.iphone-screen { 
-  position: relative;
-  width: 100vw; 
-  height: 100vh; 
-  overflow: hidden; 
-}
-
-/* 開機畫面 */
-#boot-screen {
+/* --- 升級版主畫面與暖色波浪背景 --- */
+#home-screen {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background-color: black; z-index: 100;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  transition: opacity 0.8s ease-in-out;
+  /* 模擬截圖中的溫暖米褐色波浪漸層 */
+  background: radial-gradient(circle at 50% 0%, #e2d1c3 0%, #b8a698 40%, #756a64 100%);
+  z-index: 10;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 50px 20px 30px 20px;
+  box-sizing: border-box;
+  opacity: 0; transform: scale(0.9);
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.apple-logo { width: 80px; height: 80px; margin-bottom: 40px; fill: white; }
-.progress-track { width: 150px; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; overflow: hidden; }
-.progress-bar { width: 0%; height: 100%; background: white; border-radius: 2px; transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1); }
-
-/* 鎖定畫面 */
-#lock-screen-container {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(135deg, #111, #333); 
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  opacity: 0; 
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* 頂部搜尋列 */
+.search-bar {
+  width: 100%; padding: 12px; border-radius: 20px;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px; box-sizing: border-box;
 }
 
-/* Liquid Glass UI：高透明度、無色偏 */
+/* 網格系統：支援不同大小的區塊 */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(70px, auto);
+  gap: 15px;
+  flex-grow: 1;
+}
+
+/* 各種尺寸的設定 */
+.widget-2x2 { grid-column: span 2; grid-row: span 2; border-radius: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.widget-4x2 { grid-column: span 4; grid-row: span 2; border-radius: 30px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 20px !important; }
+.app-icon { border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; line-height: 1.5; }
+
+/* 照片 Widget 特殊處理 */
+.photo-widget { padding: 0 !important; overflow: hidden; border: none; }
+.photo-widget img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
+
+/* 行事曆文字 */
+.calendar-date { font-size: 40px; font-weight: 300; }
+.calendar-day { font-size: 14px; font-weight: 500; opacity: 0.8; color: #ff3b30; }
+
+.dock { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 15px; border-radius: 35px; margin-bottom: 10px; }
+.dock .app-icon { height: 60px; font-size: 24px; } /* Dock 裡面的圖示大一點，不顯示文字 */
+
+/* 純粹透明 Liquid Glass 共用材質 (無藍色偏) */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08); /* 極低的不透明度 */
   backdrop-filter: blur(35px);
   -webkit-backdrop-filter: blur(35px);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 40px;
-  padding: 40px;
-  text-align: center;
-  color: white;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  color: white; text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
 }
 
-.time { font-size: 85px; font-weight: 200; margin: 0; letter-spacing: 2px; }
-.date { font-size: 22px; font-weight: 400; opacity: 0.8; margin-bottom: 10px; }
+/* 點擊時的下壓回饋 */
+.clickable { cursor: pointer; }
+.clickable:active { transform: scale(0.92); opacity: 0.7; }
 
-/* 底部滑動提示 */
-.home-indicator-area {
-  position: absolute; bottom: 0; width: 100%; height: 50px;
-  display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; z-index: 50;
-  cursor: grab;
+/* 動態島通知 */
+#dynamic-island {
+  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 250px; padding: 15px; border-radius: 30px; z-index: 100;
+  font-weight: 600; font-size: 14px; letter-spacing: 1px;
+  background: rgba(0, 0, 0, 0.4); /* 深色的毛玻璃更能突顯文字 */
+  transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.home-indicator-area:active { cursor: grabbing; }
-.home-indicator { width: 35%; height: 5px; background: white; border-radius: 10px; opacity: 0.7; transition: opacity 0.3s ease; }
-
-.swipe-text { position: absolute; bottom: 65px; color: white; font-size: 14px; opacity: 0.6; animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
