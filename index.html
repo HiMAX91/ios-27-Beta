@@ -21,7 +21,9 @@
     .date { font-size: 20px; font-weight: 500; opacity: 0.9; color: white; margin-bottom: -10px; }
     .swipe-text { position: absolute; bottom: 65px; color: white; font-size: 14px; opacity: 0.6; animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
-    .home-indicator-area { position: absolute; bottom: 0; width: 100%; height: 50px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; cursor: grab; z-index: 150; }
+    
+    /* 🌟 關鍵修復：加入 touch-action: none 阻擋瀏覽器干擾 */
+    .home-indicator-area { position: absolute; bottom: 0; width: 100%; height: 50px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; cursor: grab; z-index: 150; touch-action: none; }
     .home-indicator { width: 35%; height: 5px; background: white; border-radius: 10px; opacity: 0.8; transition: transform 0.2s ease; }
 
     /* --- 主畫面系統 --- */
@@ -47,42 +49,22 @@
     .photo-widget img { width: 100%; height: 100%; object-fit: cover; }
     .calendar-date { font-size: 45px; font-weight: 300; }
     .calendar-day { font-size: 14px; font-weight: 600; color: #ff3b30; }
-    .clickable { cursor: pointer; transition: transform 0.15s ease, opacity 0.15s ease; }
+    .clickable { cursor: pointer; transition: transform 0.1s ease, opacity 0.1s ease; }
     .clickable:active { transform: scale(0.9) !important; opacity: 0.7; }
 
-    /* --- 🌟 全新：App 運行層 (全螢幕 App 視窗) --- */
+    /* --- App 運行層 --- */
     #app-layer {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: #f2f2f7; /* iOS 預設的淺灰背景色 */
-      z-index: 80;
-      display: flex; flex-direction: column;
-      /* 預設藏在畫面最底下，點擊時彈上來 */
-      transform: translateY(100vh) scale(0.9);
-      opacity: 0;
-      pointer-events: none;
+      background: #f2f2f7; z-index: 80; display: flex; flex-direction: column;
+      transform: translateY(100vh) scale(0.9); opacity: 0; pointer-events: none;
       transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      border-radius: 40px; /* 模擬新版 iPhone 圓角螢幕 */
-      overflow: hidden;
+      border-radius: 40px; overflow: hidden;
     }
-    
-    /* App 頂部導覽列 */
-    #app-header {
-      padding: 50px 20px 15px 20px;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-      display: flex; justify-content: center; align-items: center;
-      position: relative; z-index: 85;
-    }
+    #app-header { padding: 50px 20px 15px 20px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; position: relative; z-index: 85; }
     #app-title { font-size: 18px; font-weight: 600; color: black; margin: 0; }
-    
-    /* App 內容區 */
     #app-content { flex-grow: 1; overflow-y: auto; padding: 20px; color: black; }
-    
-    /* App 底部的上滑關閉熱區 */
     #app-home-area { z-index: 90; }
-    #app-home-area .home-indicator { background: black; } /* App 內通常是黑色的橫條 */
-
+    #app-home-area .home-indicator { background: black; }
   </style>
 </head>
 <body>
@@ -101,13 +83,29 @@
           <div class="search-bar glass-panel clickable" data-name="App 資料庫">🔍 App 資料庫</div>
           <div class="widget-2x2 glass-panel clickable" data-name="時鐘"><span style="font-size: 35px;">⌚️</span></div>
           <div class="widget-2x2 glass-panel clickable" data-name="行事曆"><div class="calendar-day" id="widget-day">週六</div><div class="calendar-date" id="widget-date">20</div></div>
-          <div class="widget-4x2 glass-panel clickable" data-name="天氣"><div style="font-size: 28px; font-weight: 300;">信義區 28°C</div><div style="font-size: 14px; opacity: 0.7; margin-top: 5px;">晴時多雲 · 降雨機率 10%</div></div>
+          <div class="widget-4x2 glass-panel clickable" data-name="天氣"><div style="font-size: 28px; font-weight: 300;">內湖區 28°C</div><div style="font-size: 14px; opacity: 0.7; margin-top: 5px;">晴時多雲 · 降雨機率 10%</div></div>
           <div class="app-icon glass-panel clickable" data-name="App Store"><span>A</span>App Store</div>
           <div class="app-icon glass-panel clickable" data-name="地圖"><span>🗺️</span>地圖</div>
           <div class="app-icon glass-panel clickable" data-name="備忘錄"><span>📝</span>備忘錄</div>
           <div class="app-icon glass-panel clickable" data-name="設定"><span>⚙️</span>設定</div>
         </div>
+        
+        <div class="page">
+          <div class="widget-4x2 glass-panel clickable photo-widget" data-name="照片">
+             <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop" alt="photo" loading="lazy">
+          </div>
+          <div class="app-icon glass-panel clickable" data-name="YouTube"><span>▶️</span>YouTube</div>
+          <div class="app-icon glass-panel clickable" data-name="Spotify"><span>🎵</span>Spotify</div>
+          <div class="app-icon glass-panel clickable" data-name="遊戲"><span>🎮</span>遊戲</div>
+          <div class="app-icon glass-panel clickable" data-name="相機"><span>📷</span>相機</div>
+        </div>
       </div>
+      
+      <div class="page-dots" id="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+      </div>
+
       <div class="dock-container">
         <div class="dock glass-panel">
           <div class="app-icon clickable" data-name="電話">📞</div>
@@ -122,8 +120,7 @@
       <div id="app-header">
         <h2 id="app-title">App Name</h2>
       </div>
-      <div id="app-content">
-        </div>
+      <div id="app-content"></div>
       <div class="home-indicator-area" id="app-home-area">
         <div class="home-indicator"></div>
       </div>
@@ -141,15 +138,15 @@
   </div>
   
   <script>
-    // --- 開機動畫 ---
-    window.onload = () => {
+    // 🌟 關鍵修復：直接執行開機動畫，不等待圖片下載
+    document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => { document.getElementById('boot-progress').style.width = '100%'; }, 100);
       setTimeout(() => {
         const bootScreen = document.getElementById('boot-screen');
         bootScreen.style.opacity = '0';
         setTimeout(() => { bootScreen.style.display = 'none'; }, 800); 
       }, 2600); 
-    };
+    });
 
     // --- 時鐘更新 ---
     function updateClock() {
@@ -165,6 +162,7 @@
     // --- 共用滑動邏輯包裝器 ---
     function setupSwipe(elementId, onSwipeUpComplete) {
       const area = document.getElementById(elementId);
+      if(!area) return;
       let startY = 0, isDragging = false;
       const target = area.parentElement;
 
@@ -176,6 +174,7 @@
         let deltaY = y - startY;
         if (deltaY < 0) target.style.transform = `translateY(${deltaY}px)`;
       };
+      
       window.addEventListener('mousemove', (e) => moveHandler(e.clientY));
       window.addEventListener('touchmove', (e) => moveHandler(e.touches[0].clientY), {passive: true});
 
@@ -186,11 +185,12 @@
         target.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
         
         if (deltaY < -120) {
-          onSwipeUpComplete(target); // 滑動成功，執行對應動作
+          onSwipeUpComplete(target); 
         } else {
-          target.style.transform = 'translateY(0)'; // 滑動失敗，彈回原位
+          target.style.transform = 'translateY(0)'; 
         }
       };
+      
       window.addEventListener('mouseup', (e) => endHandler(e.clientY));
       window.addEventListener('touchend', (e) => endHandler(e.changedTouches[0].clientY));
     }
@@ -199,7 +199,7 @@
     setupSwipe('lock-home-area', (lockContainer) => {
       lockContainer.style.transform = 'translateY(-100vh)';
       lockContainer.style.opacity = '0';
-      lockContainer.style.pointerEvents = 'none';
+      lockContainer.style.pointerEvents = 'none'; // 徹底隱藏，不阻擋後續點擊
       document.getElementById('home-screen').style.opacity = '1';
       document.getElementById('home-screen').style.transform = 'scale(1)';
     });
@@ -211,7 +211,7 @@
       appLayer.style.pointerEvents = 'none';
     });
 
-    // --- 🌟 開啟 App 邏輯 ---
+    // --- 開啟 App 邏輯 ---
     const appLayer = document.getElementById('app-layer');
     const appTitle = document.getElementById('app-title');
     const appContent = document.getElementById('app-content');
@@ -223,7 +223,6 @@
           const appName = item.getAttribute('data-name');
           appTitle.innerText = appName;
           
-          // 針對不同 App 載入不同的假畫面內容
           if (appName === 'Safari') {
             appContent.innerHTML = `
               <div style="background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;">
@@ -234,8 +233,7 @@
                 <div><div style="font-size:30px; margin-bottom:5px;">📰</div>新聞</div>
                 <div><div style="font-size:30px; margin-bottom:5px;">🛒</div>購物</div>
                 <div><div style="font-size:30px; margin-bottom:5px;">☁️</div>iCloud</div>
-              </div>
-            `;
+              </div>`;
           } else if (appName === '設定') {
             appContent.innerHTML = `
               <div style="background: white; border-radius: 15px; overflow: hidden; margin-bottom: 20px;">
@@ -245,25 +243,17 @@
                 </div>
                 <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center;">
                   <div style="width: 30px; height: 30px; background: #007aff; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">📶</div>
-                  Wi-Fi <span style="margin-left: auto; color: #888;">TP-Link_5G</span>
+                  Wi-Fi <span style="margin-left: auto; color: #888;">已連線</span>
                 </div>
-                <div style="padding: 15px; display: flex; align-items: center;">
-                  <div style="width: 30px; height: 30px; background: #007aff; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">ᛒ</div>
-                  藍牙 <span style="margin-left: auto; color: #888;">開啟</span>
-                </div>
-              </div>
-            `;
+              </div>`;
           } else {
-            // 通用的預設 App 畫面
             appContent.innerHTML = `
               <div style="display: flex; flex-direction: column; height: 70%; justify-content: center; align-items: center; color: #888;">
                 <div style="font-size: 60px; margin-bottom: 20px;">🛠️</div>
                 <div>${appName} 的開發者介面建置中...</div>
-              </div>
-            `;
+              </div>`;
           }
           
-          // 觸發 App 彈出動畫
           appLayer.style.transform = 'translateY(0) scale(1)';
           appLayer.style.opacity = '1';
           appLayer.style.pointerEvents = 'auto';
@@ -271,6 +261,20 @@
       });
     }, 500);
 
+    // --- 滑動換頁連動小圓點 ---
+    const carousel = document.getElementById('carousel');
+    const dots = document.querySelectorAll('.dot');
+    if(carousel && dots.length > 0) {
+      carousel.addEventListener('scroll', () => {
+        let scrollPosition = carousel.scrollLeft;
+        let pageWidth = carousel.clientWidth;
+        let currentPage = Math.round(scrollPosition / pageWidth);
+        dots.forEach((dot, index) => {
+          if(index === currentPage) dot.classList.add('active');
+          else dot.classList.remove('active');
+        });
+      });
+    }
   </script>
 </body>
 </html>
